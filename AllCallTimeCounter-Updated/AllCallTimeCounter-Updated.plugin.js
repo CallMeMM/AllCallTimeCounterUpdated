@@ -1,8 +1,8 @@
 /**
  * @name AllCallTimeCounter
- * @author Max
- * @authorLink https://github.com/Max-Herbold
- * @version 1.1.5.1
+ * @author CallMeM
+ * @authorLink https://github.com/CallMeMM
+ * @version 1.1.5.2
  * @description Add call timer to all users in a server voice channel.
  * @website https://github.com/CallMeMM/AllCallTimeCounterUpdated/tree/main/AllCallTimeCounter-Updated
  * @source https://github.com/CallMeMM/AllCallTimeCounterUpdated/blob/main/AllCallTimeCounter-Updated/AllCallTimeCounter-Updated.plugin.js
@@ -15,7 +15,7 @@ module.exports = (_ => {
             super(props);
             this.state = { time_delta: Date.now() - this.props.time };
         }
-
+    
         render() {
             let time = new Date(Date.now() - this.props.time).toISOString().substr(11, 8);
             return window.BdApi.React.createElement("div", {
@@ -25,50 +25,98 @@ module.exports = (_ => {
                     position: "relative",
                     marginTop: -0,
                     fontWeight: "bold",
-                    fontFamily: "'Helvetica Neue', Arial, sans-serif", // Updated font for better readability
-                    fontSize: 10,         // Font size
+                    fontFamily: this.props.font,
+                    fontSize: 10,
                     color: "var(--channels-default)",
-                    padding: "0px 6px",   // Adjusted padding for a smaller outline
-                    borderRadius: "6px",   // Rounded corners for aesthetic appeal
-                    backgroundColor: "rgba(0, 0, 0, 0.5)", // Transparent background
-                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.5)", // Subtle shadow for depth
-                    maxWidth: "60px",      // Limit the width to prevent overlap
-                    overflow: "hidden",     // Hide any overflow
-                    whiteSpace: "nowrap",   // Prevent text wrapping
+                    padding: "0px 6px",
+                    borderRadius: "6px",
+                    backgroundColor: this.props.bgColor,
+                    opacity: this.props.bgOpacity,
+                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.5)",
+                    width: "44px",      // Set a fixed width for the timer box
+                    overflow: "hidden",  // Hide any overflow
+                    whiteSpace: "nowrap", // Prevent text wrapping
                     textOverflow: "ellipsis" // Show ellipsis for long text
                 }
             });
         }
-
+    
         componentDidMount() {
             this.interval = setInterval(() => this.setState({ time: Date.now() }), 1000);
         }
-
+    
         componentWillUnmount() {
             clearInterval(this.interval);
         }
     }
-
-    const showChangelog = () => {
-        const changelog = `
-**Coming Soon: \`AllCallTimeCounter\`**
-
-- Customize the background color
-- Adjust the transparency of the background
-- Toggle the background on and off!
-- Improved background and timer size!
-        `;
-
-        // Using an alert for simplicity; consider creating a modal for a better UX
-        window.BdApi.alert("⚠️ Upcoming Features", changelog);
-    };
-
+    
     return class AllCallTimeCounter {
+        constructor() {
+            this.settings = {
+                alwaysShowTimer: true,
+                bgColor: "rgba(0, 0, 0, 0.5)",
+                bgOpacity: 0.5,
+            };
+        }
+
         users = new Map();  // value format: [channelId, lastUpdatedTime]
 
         load() {
-            // Call the changelog function when the plugin is loaded
-            showChangelog();
+            this.loadSettings();
+        
+            const currentVersion = "1.1.5.2"; // Set the current version
+            const savedVersion = window.BdApi.loadData("AllCallTimeCounter", "version");
+        
+            if (savedVersion !== currentVersion) {
+                // Show the changelog only if the version has changed
+                window.BdApi.showToast("AllCallTimeCounter has been updated to version " + currentVersion + ". Check the changelog for new features!", {type: "info", timeout: 5000});
+        
+                // Save the current version to prevent the changelog from showing again
+                window.BdApi.saveData("AllCallTimeCounter", "version", currentVersion);
+        
+                // Add your changelog message here
+                this.showChangelog();
+            }
+        }
+        
+        showChangelog() {
+            window.BdApi.alert("AllCallTimeCounter Change Log", `
+- **New Features:**
+  - Added **Background Color** option to customize the background of the call timer.
+  - Added **Background Transparency** slider to adjust the opacity of the call timer background.
+  - **Toggle All Call Time Counter:** You can now turn the call time counter on or off through the settings menu.
+
+---
+
+- **Known Bugs:**
+    - **Settings Update Issue:** Changes in the settings do not reflect immediately. You’ll need to close and reopen the settings menu for the modifications to show up.
+            `);
+        }        
+
+        loadSettings() {
+            const savedSettings = window.BdApi.loadData("AllCallTimeCounter", "settings");
+            if (savedSettings) {
+                this.settings = savedSettings;
+            }
+        }
+
+        saveSettings() {
+            window.BdApi.saveData("AllCallTimeCounter", "settings", this.settings);
+        }
+
+        toggleAlwaysShowTimer() {
+            this.settings.alwaysShowTimer = !this.settings.alwaysShowTimer;
+            this.saveSettings();
+        }
+
+        updateBgColor(newColor) {
+            this.settings.bgColor = newColor;
+            this.saveSettings();
+        }
+
+        updateBgOpacity(newOpacity) {
+            this.settings.bgOpacity = newOpacity;
+            this.saveSettings();
         }
 
         allUsers(guilds) {
@@ -142,7 +190,11 @@ module.exports = (_ => {
 
         createUserTimer(user, parent) {
             const time = this.users.get(user.id)[1];
-            const tag = window.BdApi.React.createElement(Timer, { time: time });
+            const tag = window.BdApi.React.createElement(Timer, {
+                time: time,
+                bgColor: this.settings.bgColor,
+                bgOpacity: this.settings.bgOpacity
+            });
 
             try {
                 parent[2].props.children.props.children.props.children.push(tag);
@@ -153,7 +205,104 @@ module.exports = (_ => {
             const { user } = e.props;
             this.updateSingleUser(user.id, e.props.channelId);
             const parent = returnValue.props.children.props.children;
-            this.createUserTimer(user, parent);
+            if (this.settings.alwaysShowTimer) {
+                this.createUserTimer(user, parent);
+            }
+        }
+
+        getSettingsPanel() {
+            const toggleStyle = {
+                display: 'inline-block',
+                width: '34px',
+                height: '20px',
+                background: this.settings.alwaysShowTimer ? '#43b581' : '#8e9297',
+                borderRadius: '20px',
+                position: 'relative',
+                cursor: 'pointer',
+                marginBottom: '10px'
+            };
+        
+            const toggleBallStyle = {
+                position: 'absolute',
+                top: '2px',
+                left: this.settings.alwaysShowTimer ? '16px' : '2px',
+                width: '16px',
+                height: '16px',
+                background: '#ffffff',
+                borderRadius: '50%',
+                transition: 'left 0.2s'
+            };
+        
+            const settingsPanel = window.BdApi.React.createElement("div", {
+                style: {
+                    padding: "20px",
+                    backgroundColor: "#2f3136",
+                    borderRadius: "8px",
+                    boxShadow: "0 0 6px rgba(0, 0, 0, 0.5)",
+                },
+                children: [
+                    window.BdApi.React.createElement("h3", {
+                        style: {
+                            color: "var(--header-primary)",
+                            fontSize: "16px",
+                            margin: "0 0 10px 0"
+                        },
+                        children: "All Call Time Counter Settings"
+                    }),
+                    window.BdApi.React.createElement("label", {
+                        style: { display: 'block', color: "var(--text-normal)", fontSize: "14px", marginBottom: "5px" },
+                        children: [
+                            window.BdApi.React.createElement("div", {
+                                style: toggleStyle,
+                                onClick: () => this.toggleAlwaysShowTimer()
+                            }, [
+                                window.BdApi.React.createElement("div", { style: toggleBallStyle })
+                            ]),
+                            " Always Show Timer"
+                        ]
+                    }),
+                    window.BdApi.React.createElement("div", {
+                        style: { marginTop: "10px", color: "var(--text-normal)" },
+                        children: [
+                            // Remove timer font section
+                            window.BdApi.React.createElement("label", {
+                                style: { display: 'block', fontSize: "14px", margin: "10px 0 5px 0" },
+                                children: "Background Color:"
+                            }),
+                            window.BdApi.React.createElement("input", {
+                                type: "color",
+                                value: this.settings.bgColor,
+                                onChange: (e) => this.updateBgColor(e.target.value),
+                                style: { width: "100%", marginTop: "5px", border: "none" }
+                            }),
+                            window.BdApi.React.createElement("label", {
+                                style: { display: 'block', fontSize: "14px", margin: "10px 0 5px 0" },
+                                children: "Background Transparency:"
+                            }),
+                            window.BdApi.React.createElement("input", {
+                                type: "range",
+                                min: 0,
+                                max: 1,
+                                step: 0.01,
+                                value: this.settings.bgOpacity,
+                                onChange: (e) => this.updateBgOpacity(e.target.value),
+                                style: { width: "100%", marginTop: "5px", border: "none" }
+                            }),
+                        ]
+                    })
+                ]
+            });
+        
+            return settingsPanel;
+        }        
+
+        onStart() {
+            this.load();
+            this.start();
+        }
+
+        onStop() {
+            this.stop();
         }
     };
 })();
