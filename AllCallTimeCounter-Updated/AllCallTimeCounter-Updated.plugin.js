@@ -49,10 +49,27 @@ module.exports = (_ => {
         }
     }
 
+    const showChangelog = () => {
+        const changelog = `
+**Coming Soon: \`AllCallTimeCounter\`**
+
+- Customize the background color
+- Adjust the transparency of the background
+- Toggle the background on and off!
+- Improved background and timer size!
+        `;
+
+        // Using an alert for simplicity; consider creating a modal for a better UX
+        window.BdApi.alert("⚠️ Upcoming Features", changelog);
+    };
+
     return class AllCallTimeCounter {
         users = new Map();  // value format: [channelId, lastUpdatedTime]
 
-        load() { }
+        load() {
+            // Call the changelog function when the plugin is loaded
+            showChangelog();
+        }
 
         allUsers(guilds) {
             let users = [];
