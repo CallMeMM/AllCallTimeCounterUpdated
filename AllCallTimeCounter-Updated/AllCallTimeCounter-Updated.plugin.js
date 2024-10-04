@@ -88,7 +88,7 @@ module.exports = (_ => {
 ---
 
 - **Known Bugs:**
-  - **Settings Issue:** Changes in the settings do not reflect immediately. You’ll need to close and reopen the settings menu for the modifications to show up.
+  - **Settings Menu Issue:** Changes in the settings do not reflect immediately. You’ll need to close and reopen the settings menu for the modifications to show up.
             `);
         }        
 
