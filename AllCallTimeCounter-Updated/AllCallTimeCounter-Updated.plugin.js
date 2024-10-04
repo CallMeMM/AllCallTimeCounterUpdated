@@ -1,6 +1,6 @@
 /**
  * @name AllCallTimeCounter
- * @author Max
+ * @author Author: Max, Modded by: CallMeM
  * @authorLink https://github.com/Max-Herbold/AllCallTimersDiscordPlugin
  * @version 1.0.3
  * @description Add call timer to all users in a server voice channel.
