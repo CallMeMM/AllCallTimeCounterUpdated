@@ -4,8 +4,6 @@
  * @authorLink https://github.com/Max-Herbold/AllCallTimersDiscordPlugin
  * @version 1.0.1
  * @description Add call timer to all users in a server voice channel.
- * @github https://github.com/CallMeMM/InMyVoiceUpdated/tree/main/InMyVoice-Updated
- * @github_raw https://raw.githubusercontent.com/CallMeMM/InMyVoiceUpdated/main/InMyVoice-Updated/InMyVoice-Updated.plugin.js
  * @source https://github.com/CallMeMM/AllCallTimeCounterUpdated/blob/main/AllCallTimeCounter-Updated/AllCallTimeCounter-Updated.plugin.js
  * @updateUrl https://raw.githubusercontent.com/CallMeMM/AllCallTimeCounterUpdated/main/AllCallTimeCounter-Updated/AllCallTimeCounter-Updated.plugin.js
  */
