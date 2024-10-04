@@ -1,8 +1,8 @@
 /**
  * @name AllCallTimeCounter
- * @author CallMeM
- * @authorLink https://github.com/CallMeMM
- * @version 1.1.5.3
+ * @author Max
+ * @authorLink https://github.com/Max-Herbold/AllCallTimersDiscordPlugin
+ * @version 1.1.5.4
  * @description Add call timer to all users in a server voice channel.
  * @website https://github.com/CallMeMM/AllCallTimeCounterUpdated/tree/main/AllCallTimeCounter-Updated
  * @source https://github.com/CallMeMM/AllCallTimeCounterUpdated/blob/main/AllCallTimeCounter-Updated/AllCallTimeCounter-Updated.plugin.js
@@ -65,7 +65,7 @@ module.exports = (_ => {
         load() {
             this.loadSettings();
         
-            const currentVersion = "1.1.5.3"; // Set the current version
+            const currentVersion = "1.1.5.4"; // Set the current version
             const savedVersion = window.BdApi.loadData("AllCallTimeCounter", "version");
         
             if (savedVersion !== currentVersion) {
