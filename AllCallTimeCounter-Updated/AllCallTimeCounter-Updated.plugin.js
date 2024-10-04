@@ -1,8 +1,8 @@
 /**
- * @name AllCallTimeCounter
+ * @name AllCallTimeCounter-Updated
  * @author Author: Max, Modded by: CallMeM
  * @authorLink https://github.com/Max-Herbold/AllCallTimersDiscordPlugin
- * @version 1.0.3
+ * @version 1.0.1
  * @description Add call timer to all users in a server voice channel.
  * @website https://github.com/CallMeMM/AllCallTimeCounterUpdated/tree/main/AllCallTimeCounter-Updated
  * @source https://github.com/CallMeMM/AllCallTimeCounterUpdated/blob/main/AllCallTimeCounter-Updated/AllCallTimeCounter-Updated.plugin.js
@@ -65,7 +65,7 @@ module.exports = (_ => {
         load() {
             this.loadSettings();
         
-            const currentVersion = "1.0.3"; // Set the current version
+            const currentVersion = "1.0.1"; // Set the current version
             const savedVersion = window.BdApi.loadData("AllCallTimeCounter", "version");
         
             if (savedVersion !== currentVersion) {
@@ -82,13 +82,14 @@ module.exports = (_ => {
         
         showChangelog() {
             window.BdApi.alert("AllCallTimeCounter Change Log", `
-- **New Features:**
-  - Added **Text Color** option to customize the timer text color.
+**New Features:**
 
----
+- Added **Text Color** option to customize the timer text color.
+- Fixed Settings Menu.
 
-- **Known Bugs:**
-  - **Settings Menu Issue:** Changes in the settings do not reflect immediately. You’ll need to close and reopen the settings menu for the modifications to show up.
+**Known Bugs:**
+
+- None.
             `);
         }        
 
@@ -216,99 +217,148 @@ module.exports = (_ => {
         }
 
         getSettingsPanel() {
-            const toggleStyle = {
-                display: 'inline-block',
-                width: '34px',
-                height: '20px',
-                background: this.settings.alwaysShowTimer ? '#43b581' : '#8e9297',
-                borderRadius: '20px',
-                position: 'relative',
-                cursor: 'pointer',
-                marginBottom: '10px'
-            };
-        
-            const toggleBallStyle = {
-                position: 'absolute',
-                top: '2px',
-                left: this.settings.alwaysShowTimer ? '16px' : '2px',
-                width: '16px',
-                height: '16px',
-                background: '#ffffff',
-                borderRadius: '50%',
-                transition: 'left 0.2s'
-            };
-        
-            const settingsPanel = window.BdApi.React.createElement("div", {
-                style: {
-                    padding: "20px",
-                    backgroundColor: "#2f3136",
-                    borderRadius: "8px",
-                    boxShadow: "0 0 6px rgba(0, 0, 0, 0.5)",
-                },
-                children: [
-                    window.BdApi.React.createElement("h3", {
-                        style: {
-                            color: "var(--header-primary)",
-                            fontSize: "16px",
-                            margin: "0 0 10px 0"
-                        },
-                        children: "All Call Time Counter Settings"
-                    }),
-                    window.BdApi.React.createElement("label", {
-                        style: { display: 'block', color: "var(--text-normal)", fontSize: "14px", marginBottom: "5px" },
-                        children: [
-                            window.BdApi.React.createElement("div", {
-                                style: toggleStyle,
-                                onClick: () => this.toggleAlwaysShowTimer()
-                            }, [
-                                window.BdApi.React.createElement("div", { style: toggleBallStyle })
-                            ]),
-                            " Always Show Timer"
-                        ]
-                    }),
-                    window.BdApi.React.createElement("div", {
-                        style: { marginTop: "10px", color: "var(--text-normal)" },
-                        children: [
-                            window.BdApi.React.createElement("label", {
-                                style: { display: 'block', fontSize: "14px", margin: "10px 0 5px 0" },
-                                children: "Background Color:"
-                            }),
-                            window.BdApi.React.createElement("input", {
-                                type: "color",
-                                value: this.settings.bgColor,
-                                onChange: (e) => this.updateBgColor(e.target.value),
-                                style: { width: "100%", marginTop: "5px", border: "none" }
-                            }),
-                            window.BdApi.React.createElement("label", {
-                                style: { display: 'block', fontSize: "14px", margin: "10px 0 5px 0" },
-                                children: "Background Transparency:"
-                            }),
-                            window.BdApi.React.createElement("input", {
-                                type: "range",
-                                min: 0,
-                                max: 1,
-                                step: 0.01,
-                                value: this.settings.bgOpacity,
-                                onChange: (e) => this.updateBgOpacity(e.target.value),
-                                style: { width: "100%", marginTop: "5px", border: "none" }
-                            }),
-                            // Add Text Color section
-                            window.BdApi.React.createElement("label", {
-                                style: { display: 'block', fontSize: "14px", margin: "10px 0 5px 0" },
-                                children: "Text Color:"
-                            }),
-                            window.BdApi.React.createElement("input", {
-                                type: "color",
-                                value: this.settings.textColor,
-                                onChange: (e) => this.updateTextColor(e.target.value),
-                                style: { width: "100%", marginTop: "5px", border: "none" }
-                            }),
-                        ]
-                    })
-                ]
+            const panel = this.createPanel();
+            
+            // Toggle Switches
+            this.createToggleSwitch(panel, "Always Show Timer:", this.settings.alwaysShowTimer, () => {
+                this.toggleAlwaysShowTimer();
             });
         
-            return settingsPanel;
+            // Color Settings
+            this.createColorSetting(panel, "Background Color:", this.settings.bgColor, (value) => {
+                this.updateBgColor(value);
+            });
+        
+            this.createColorSetting(panel, "Text Color:", this.settings.textColor, (value) => {
+                this.updateTextColor(value);
+            });
+        
+            // Range Settings
+            this.createRangeSetting(panel, "Background Opacity:", this.settings.bgOpacity, 0, 1, 0.01, (value) => {
+                this.updateBgOpacity(value);
+            });
+        
+            return panel;
+        }
+        
+        createPanel() {
+            const panel = document.createElement("div");
+            panel.style.padding = "20px"; // Increased padding for better spacing
+            panel.style.backgroundColor = "#2f3136"; // Discord's background color
+            panel.style.borderRadius = "8px"; // Rounded corners
+            panel.style.color = "var(--text-normal)"; // Text color for better contrast
+            panel.style.fontFamily = "Avenir, Helvetica, sans-serif"; // Modern font
+            return panel;
+        }
+        
+        // Toggle Switch Helper
+        createToggleSwitch(panel, labelText, isChecked, onChange) {
+            const toggleContainer = document.createElement("div");
+            toggleContainer.className = "setting";
+            toggleContainer.style.display = "flex";
+            toggleContainer.style.alignItems = "center";
+            toggleContainer.style.marginBottom = "15px"; // Spacing between settings
+        
+            const label = this.createLabel(labelText);
+            const toggleInput = this.createToggleInput(isChecked);
+            const toggleSwitch = this.createToggleSwitchElement(isChecked, toggleInput);
+        
+            toggleContainer.append(label, toggleSwitch);
+            panel.appendChild(toggleContainer);
+        
+            toggleSwitch.addEventListener("click", () => {
+                toggleInput.checked = !toggleInput.checked; // Toggle the checkbox
+                onChange(); // Call the provided onChange function
+                this.updateToggleSwitchAppearance(toggleSwitch, toggleInput.checked);
+            });
+        }
+        
+        // Create Label Helper
+        createLabel(text) {
+            const label = document.createElement("span");
+            label.textContent = text;
+            label.style.marginRight = "10px"; // Spacing between label and toggle
+            return label;
+        }
+        
+        // Create Toggle Input Helper
+        createToggleInput(isChecked) {
+            const toggleInput = document.createElement("input");
+            toggleInput.type = "checkbox";
+            toggleInput.checked = isChecked;
+            toggleInput.style.display = "none"; // Hide the default checkbox
+            return toggleInput;
+        }
+        
+        // Create Toggle Switch Element Helper
+        createToggleSwitchElement(isChecked, toggleInput) {
+            const toggleSwitch = document.createElement("div");
+            toggleSwitch.className = "toggle-switch";
+            toggleSwitch.style.width = "40px";
+            toggleSwitch.style.height = "20px";
+            toggleSwitch.style.borderRadius = "12px";
+            toggleSwitch.style.position = "relative";
+            toggleSwitch.style.backgroundColor = isChecked ? "#43b581" : "#8e9297"; // Toggle color
+            toggleSwitch.style.cursor = "pointer";
+            toggleSwitch.style.transition = "background 0.2s";
+        
+            const toggleCircle = document.createElement("div");
+            toggleCircle.style.position = "absolute";
+            toggleCircle.style.top = "2px";
+            toggleCircle.style.left = isChecked ? "20px" : "2px";
+            toggleCircle.style.width = "16px";
+            toggleCircle.style.height = "16px";
+            toggleCircle.style.borderRadius = "50%";
+            toggleCircle.style.backgroundColor = "#ffffff";
+            toggleCircle.style.transition = "left 0.2s";
+        
+            toggleSwitch.appendChild(toggleCircle);
+            return toggleSwitch;
+        }
+        
+        // Update Toggle Switch Appearance Helper
+        updateToggleSwitchAppearance(toggleSwitch, isChecked) {
+            toggleSwitch.style.backgroundColor = isChecked ? "#43b581" : "#8e9297"; // Update color
+            toggleSwitch.lastChild.style.left = isChecked ? "20px" : "2px"; // Move the circle
+        }
+        
+        // Color Setting Helper
+        createColorSetting(panel, labelText, initialColor, onChange) {
+            const colorSetting = document.createElement("div");
+            colorSetting.className = "setting";
+        
+            const label = this.createLabel(labelText);
+            const colorInput = document.createElement("input");
+            colorInput.type = "color";
+            colorInput.value = initialColor;
+        
+            colorInput.addEventListener("input", () => {
+                onChange(colorInput.value);
+            });
+        
+            colorSetting.append(label, colorInput);
+            panel.appendChild(colorSetting);
+        }
+        
+        // Range Setting Helper
+        createRangeSetting(panel, labelText, initialValue, min, max, step, onChange) {
+            const rangeSetting = document.createElement("div");
+            rangeSetting.className = "setting";
+        
+            const label = this.createLabel(labelText);
+            const rangeInput = document.createElement("input");
+            rangeInput.type = "range";
+            rangeInput.min = min;
+            rangeInput.max = max;
+            rangeInput.step = step;
+            rangeInput.value = initialValue;
+        
+            rangeInput.addEventListener("input", () => {
+                onChange(parseFloat(rangeInput.value));
+            });
+        
+            rangeSetting.append(label, rangeInput);
+            panel.appendChild(rangeSetting);
         }        
 
         onStart() {
